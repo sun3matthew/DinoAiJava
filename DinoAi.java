@@ -44,13 +44,13 @@ class AiProgram extends JPanel implements KeyListener{
  Population pop;
 
  public AiProgram() {
-  BallMover ballmover = new BallMover();
-  balltimer = new Timer(5, ballmover);
-  balltimer.start();
   nextCactRandom = ((int)(Math.random()*100));
   obsCounter = 0;
   gameSpeed = 6;
-  pop = new Population(2000);
+  pop = new Population(500);
+  BallMover ballmover = new BallMover();
+  balltimer = new Timer(5, ballmover);
+  balltimer.start();
   addKeyListener(this);
  }
 
@@ -121,11 +121,11 @@ class AiProgram extends JPanel implements KeyListener{
 
  public void keyTyped(KeyEvent e)
  {
-   
+
    char temp = e.getKeyChar();
    if(temp == ' ')
    {
-     for(int i = 0; i < 10000; i++)
+     for(int i = 0; i < 1000; i++)
      {
       gameLen++;
       if(!pop.allDead())
@@ -140,7 +140,7 @@ class AiProgram extends JPanel implements KeyListener{
       }
      }
    }
-   
+
  }
  public void keyPressed(KeyEvent e) {}
  public void keyReleased(KeyEvent e) {}
