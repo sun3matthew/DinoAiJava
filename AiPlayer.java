@@ -12,14 +12,14 @@ class AiPlayer
   public static int floorHight = screenHight-100;
   public static int playerHight = 120;
   public static int playerWidth = 80;
-  public static int genomeInputs = 5;
+  public static int genomeInputs = 6;
   public static int genomeOutputs = 2;
   public static double gravity = 0.2;
 
   int fitness;
 
-  double[] vision = new double[genomeInputs];
-  double[] decision = new double[genomeOutputs];
+  double[] vision = new double[genomeInputs];//dist to obs, hight of obs, width of obs, dist btw, player y
+  double[] decision = new double[genomeOutputs];//big, small jump
 
   Genome brain;
 
@@ -64,7 +64,7 @@ class AiPlayer
     int minIndex = -1;
     for(int i = 0; i < cacti.size(); i++)
     {
-      if(cacti.get(i).cactusX < min && cacti.get(i).cactusX + cacti.get(i).cactusWidth > 0)
+      if(cacti.get(i).cactusX - playerX + playerWidth < min && cacti.get(i).cactusX - playerX + playerWidth > 0)
       {
         min = cacti.get(i).cactusX - playerX + playerWidth;
         minIndex = i;
@@ -73,22 +73,22 @@ class AiPlayer
     vision[3] = playerY-floorHight+playerHight;//playerY
     if(minIndex == -1)
     {
-      vision[0] = 0;//dist to obs
+      vision[0] = 1;//dist to obs
       vision[1] = 0;//hight of obs
       vision[2] = 0;//width or obs
-      vision[4] = 0;//dist btw
+      vision[4] = 1;//dist btw
     }else
     {
-      vision[0] = 1.0/(min);
-      vision[1] = 1.0/cacti.get(minIndex).cactusHeight;
-      vision[2] = 1.0/cacti.get(minIndex).cactusWidth;
+      vision[0] = min/2000;
+      vision[1] = cacti.get(minIndex).cactusHeight/200.0;
+      vision[2] = cacti.get(minIndex).cactusWidth/200.0;
       int bestIndex = minIndex;
       double closestDist = min;
       min = 10000;
       minIndex = -1;
       for(int i = 0; i < cacti.size(); i++)
       {
-        if(i !=  bestIndex && cacti.get(i).cactusX < min && cacti.get(i).cactusX + cacti.get(i).cactusWidth > 0)
+        if(i != bestIndex && cacti.get(i).cactusX - playerX + playerWidth < min && cacti.get(i).cactusX - playerX + playerWidth > 0)
         {
           min = cacti.get(i).cactusX - playerX + playerWidth;
           minIndex = i;
@@ -97,11 +97,13 @@ class AiPlayer
       //System.out.println((min-closestDist));
       if(minIndex == -1)
       {
-        vision[4] = 0;
+        vision[3] = 0;
       }else
       {
-        vision[4] = 1.0/(min-closestDist);
+        vision[3] = (min-closestDist)/2000;
       }
+      vision[4] = playerY/500;
+      vision[5] = 1;
     }
   }
   public void think()
@@ -119,7 +121,7 @@ class AiPlayer
       }
     }
     //System.out.println(decision[0] + "\t" + decision[1]);
-    if(max < 0.7)
+    if(max > 0.7)
     {
       return;
     }

@@ -43,7 +43,6 @@ class Population
   public void naturalSelection()
   {
     calculateFitnessPop();
-    //ArrayList <AiPlayer> temp = new ArrayList <AiPlayer>();
     double max = 0.0;
     int maxIndex = 0;
     for(int i = 0; i < players.size(); i++)
@@ -65,12 +64,11 @@ class Population
     best.reset();
     for(int i = 1; i < numPlayers; i++)
     {
-      players.add(new AiPlayer(best));
-      players.get(i).brain.mutate();
-    }
-    for(int i = numPlayers - 200; i < numPlayers; i++)
-    {
-      players.set(i, new AiPlayer());
+      if(i < numPlayers/2){
+        players.add(new AiPlayer(best));
+      }else{
+        players.add(new AiPlayer());
+      }
       players.get(i).brain.mutate();
     }
   }

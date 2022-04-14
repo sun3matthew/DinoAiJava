@@ -3,8 +3,7 @@ class Genome
 {
   private ArrayList<ConnectionGene> genes = new ArrayList<ConnectionGene>();
   private ArrayList<Node> nodes = new ArrayList<Node>();
-  private ArrayList<Node> network = new ArrayList<Node>();
-  private Node biasNode;
+  public ArrayList<Node> network = new ArrayList<Node>();
 
   public static int layers = 6;
   public Genome()
@@ -15,9 +14,6 @@ class Genome
       nodes.add(new Node(i, 0));
     for(int i = 0; i < outputs; i++)
       nodes.add(new Node(inputs+i, layers-1));
-
-    biasNode = new Node(inputs + outputs, 0);
-    nodes.add(biasNode);
   }
   public Genome(Genome clone)
   {
@@ -25,7 +21,6 @@ class Genome
       nodes.add(new Node(clone.nodes.get(i)));
     for(int i = 0; i < clone.genes.size(); i++)
       genes.add(new ConnectionGene(getNode(clone.genes.get(i).fromNode.number), getNode(clone.genes.get(i).toNode.number), clone.genes.get(i).weight));
-    biasNode = getNode(AiPlayer.genomeInputs + AiPlayer.genomeOutputs);
     generateNetwork();
   }
 
@@ -33,9 +28,8 @@ class Genome
     for (int i = 0; i < AiPlayer.genomeInputs; i++) {
       nodes.get(i).outputValue = inputValues[i];
     }
-    biasNode.outputValue = 1.0;
 
-    for (int i = 0; i < network.size(); i++) {
+    for (int i = 0; i < network.size(); i++){
       network.get(i).engage();
     }
 
@@ -44,7 +38,7 @@ class Genome
     for (int i = 0; i < outs.length; i++) {
       outs[i] = nodes.get(AiPlayer.genomeInputs + i).outputValue;
     }
-    for (int i = 0; i < nodes.size(); i++) {//reset all the nodes for the next feed forward
+    for (int i = 0; i < nodes.size(); i++){//reset all the nodes for the next feed forward
       nodes.get(i).inputSum = 0;
     }
     return outs;
@@ -68,7 +62,6 @@ class Genome
         if(nodes.get(i).layer == l)
         {
           network.add(nodes.get(i));
-          //System.out.println("TSET");
         }
       }
     }
@@ -80,7 +73,7 @@ class Genome
       addConection();
     }
     double randomNum = Math.random();
-    if(randomNum < 0.7)
+    if(randomNum < 0.9)
     {
       for(int i = 0; i < genes.size(); i++)
       {
@@ -88,43 +81,47 @@ class Genome
       }
     }
     randomNum = Math.random();
-    if(randomNum < 0.07)
+    if(randomNum < 0.7)
       addConection();
     randomNum = Math.random();
-    if(randomNum < 0.02)
-      nodes.add(new Node(nodes.size(), 1 + (int)(Math.random() * 6)));
+    if(randomNum < 0.5){
+      nodes.add(new Node(nodes.size(), 1+(int)(Math.random() * 4)));
+      addConection(nodes.size()-1, true);
+      addConection(nodes.size()-1, false);
+    }
   }
   private void addConection() // adding a connection between two nodes
   {
-    int randomNode1 = (int)(Math.random()*nodes.size());
+    int randomNode1 = (int)(Math.random()*nodes.size()-1);
+    int randomNode2 = (int)(Math.random()*nodes.size()-1);
+    while(nodes.get(randomNode1).layer == nodes.get(randomNode2).layer || nodes.get(randomNode1).isConnectedTo(nodes.get(randomNode2)))
+    {
+      randomNode1 = (int)(Math.random()*nodes.size()-1);
+      randomNode2 = (int)(Math.random()*nodes.size()-1);
+    }
+    addConection(randomNode1, randomNode2);
+  }
+
+  private void addConection(int newNode, boolean inputOrOutput) // adding a connection between two nodes
+  {
     int randomNode2 = (int)(Math.random()*nodes.size());
-    while(newConnection(randomNode1, randomNode2))
-    {
-      randomNode1 = (int)(Math.random()*nodes.size());
+    while((inputOrOutput ? nodes.get(newNode).layer <= nodes.get(randomNode2).layer : nodes.get(newNode).layer >= nodes.get(randomNode2).layer) || nodes.get(newNode).isConnectedTo(nodes.get(randomNode2)))
       randomNode2 = (int)(Math.random()*nodes.size());
-    }
+    addConection(newNode, randomNode2);
+  }
+
+  private void addConection(int node1, int node2){
     int temp;
-    if(nodes.get(randomNode1).layer > nodes.get(randomNode2).layer)
+    if(nodes.get(node1).layer > nodes.get(node2).layer)
     {
-      temp = randomNode2;
-      randomNode2 = randomNode1;
-      randomNode1 = temp;
+      temp = node2;
+      node2 = node1;
+      node1 = temp;
     }
-    genes.add(new ConnectionGene(nodes.get(randomNode1), nodes.get(randomNode2), (Math.random()*2)-1));
+    genes.add(new ConnectionGene(nodes.get(node1), nodes.get(node2), (Math.random()*2)-1));
     connectNodes();
   }
-  public boolean newConnection(int r1, int r2)
-  {
-    if(nodes.get(r1).layer == nodes.get(r2).layer)
-    {
-      return true;
-    }
-    if(nodes.get(r1).isConnectedTo(nodes.get(r2)))
-    {
-      return true;
-    }
-    return false;
-  }
+
   public Node getNode(int nodeNumber)
   {
     for (int i = 0; i < nodes.size(); i++) {

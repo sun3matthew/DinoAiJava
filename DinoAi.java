@@ -47,9 +47,9 @@ class AiProgram extends JPanel implements KeyListener{
   nextCactRandom = ((int)(Math.random()*100));
   obsCounter = 0;
   gameSpeed = 6;
-  pop = new Population(500);
+  pop = new Population(800);
   BallMover ballmover = new BallMover();
-  balltimer = new Timer(5, ballmover);
+  balltimer = new Timer(4, ballmover);
   balltimer.start();
   addKeyListener(this);
  }
@@ -74,11 +74,9 @@ class AiProgram extends JPanel implements KeyListener{
  public void updateObstacles()
  {
    obsCounter++;
-   //System.out.println("TEST");
    if(obsCounter > 75-gameLen/100 + nextCactRandom)
    {
      obsCounter = 0;
-     //System.out.println("TEST");
      addObstacle();
      nextCactRandom = ((int)(Math.random()*200));
    }
@@ -105,7 +103,7 @@ class AiProgram extends JPanel implements KeyListener{
 
  public void paintComponent(Graphics g) {
   super.paintComponent(g);
-  setBackground(Color.gray);
+  setBackground(new Color(255, 230, 230));
   g.setColor(Color.BLACK);
   g.fillRect(0, AiPlayer.floorHight, screenWidth, 200);
   for(int i = 0; i < pop.players.size(); i++)
@@ -117,7 +115,60 @@ class AiProgram extends JPanel implements KeyListener{
   g.setColor(Color.blue);
   if(pop.best != null && pop.best.alive)
       g.fillRect((int)pop.best.playerX, (int)pop.best.playerY, AiPlayer.playerWidth, AiPlayer.playerHight);
+
+  if(pop.best != null && pop.best.alive)
+  {
+    int[] xy = null;
+    int[] x2y2 = null;
+    g.setColor(Color.red);
+    //System.out.println(pop.best.brain.network.size());
+    for(int i = 0; i < pop.best.brain.network.size(); i++)
+    {
+      xy = getXYofNode(pop.best.brain.network.get(i));
+      //System.out.println("Size: " + pop.best.brain.network.size() + " : " + pop.best.brain.network.get(i).layer);
+      for(int j = 0; j < pop.best.brain.network.get(i).outputConnections.size(); j++)
+      {
+        x2y2 = getXYofNode(pop.best.brain.network.get(i).outputConnections.get(j).toNode);
+        //System.out.println(pop.best.brain.network.get(i).outputConnections.get(j).weight);
+        int shade = (int)(pop.best.brain.network.get(i).outputConnections.get(j).weight*127.0)+127;
+        shade = 255 - shade;
+        g.setColor(new Color(shade, shade, shade));
+        if(x2y2 != null)
+          g.drawLine(xy[0] * 30 + 225, xy[1] * 20 + 25, x2y2[0] * 30 + 225, x2y2[1] * 20 + 25);
+      }
+    }
+    for(int i = 0; i < pop.best.brain.network.size(); i++)
+    {
+      int shade =(int)(((pop.best.brain.network.get(i).outputValue))*255);
+      if(shade > 255)
+        shade = 255;
+      if(shade < 0)
+        shade = 0;
+      g.setColor(new Color(shade, shade, shade));
+      xy = getXYofNode(pop.best.brain.network.get(i));
+      g.fillOval((int)(xy[0] * 30 + 220),(int)(xy[1] * 20 + 20), 10, 10);
+    }
+  }
  } // end paintComponent
+
+ private int[] getXYofNode(Node node){
+  int currLayer = 0;
+  int numInLayer = 0;
+  for(int i = 0; i < pop.best.brain.network.size(); i++)
+  {
+    int layer = (pop.best.brain.network.get(i).layer);
+    if(layer == currLayer)
+    {
+      numInLayer++;
+    }else{
+      numInLayer = 1;
+      currLayer = layer;
+    }
+    if(pop.best.brain.network.get(i) == node)
+      return new int[]{currLayer, numInLayer};
+  }
+  return null;
+ }
 
  public void keyTyped(KeyEvent e)
  {
@@ -125,7 +176,7 @@ class AiProgram extends JPanel implements KeyListener{
    char temp = e.getKeyChar();
    if(temp == ' ')
    {
-     for(int i = 0; i < 1000; i++)
+     for(int i = 0; i < 10000; i++)
      {
       gameLen++;
       if(!pop.allDead())

@@ -19,12 +19,12 @@ class Cactus
       cactusHeight = 80;
     }else if(type == 1)
     {
-      cactusWidth = 60;
-      cactusHeight = 120;;
+      cactusWidth = 20;
+      cactusHeight = 200;;
     }else
     {
-      cactusWidth = 120;
-      cactusHeight = 80;
+      cactusWidth = 140;
+      cactusHeight = 90;
     }
     cactusY = floorHight-cactusHeight;
   }
